@@ -166,7 +166,7 @@ catchup_preflight_checks(PGNodeInfo *source_node_info, PGconn *source_conn,
 		source_id = get_system_identifier(source_pgdata, FIO_DB_HOST, false); /* same as instance_config.system_identifier */
 
 		if (source_conn_id != source_id)
-			elog(ERROR, "Database identifiers mismatch: we connected to DB id %lu, but in \"%s\" we found id %lu",
+			elog(ERROR, "Database identifiers mismatch: we connected to DB id " UINT64_FORMAT ", but in \"%s\" we found id " UINT64_FORMAT,
 				source_conn_id, source_pgdata, source_id);
 
 		if (current.backup_mode != BACKUP_MODE_FULL)
@@ -176,8 +176,8 @@ catchup_preflight_checks(PGNodeInfo *source_node_info, PGconn *source_conn,
 			dest_id = dst_control.system_identifier;
 
 			if (source_conn_id != dest_id)
-			elog(ERROR, "Database identifiers mismatch: we connected to DB id %llu, but in \"%s\" we found id %llu",
-				(long long)source_conn_id, dest_pgdata, (long long)dest_id);
+			elog(ERROR, "Database identifiers mismatch: we connected to DB id " UINT64_FORMAT ", but in \"%s\" we found id " UINT64_FORMAT,
+				source_conn_id, dest_pgdata, dest_id);
 		}
 	}
 
@@ -451,7 +451,7 @@ catchup_thread_runner(void *arg)
 
 		if (file->write_size == BYTES_INVALID)
 		{
-			elog(LOG, "Skipping the unchanged file: \"%s\", read %li bytes", from_fullpath, file->read_size);
+			elog(LOG, "Skipping the unchanged file: \"%s\", read " UINT64_FORMAT " bytes", from_fullpath, file->read_size);
 			continue;
 		}
 

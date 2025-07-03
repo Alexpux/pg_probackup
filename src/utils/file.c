@@ -2119,10 +2119,10 @@ fio_copy_pages(const char *to_fullpath, const char *from_fullpath, pgFile *file,
 		elog(ERROR, "Cannot change mode of \"%s\": %s", to_fullpath,
 			strerror(errno));
 
-	elog(VERBOSE, "ftruncate file \"%s\" to size %lu",
+	elog(VERBOSE, "ftruncate file \"%s\" to size " UINT64_FORMAT,
 			to_fullpath, file->size);
 	if (fio_ftruncate(out, file->size) == -1)
-		elog(ERROR, "Cannot ftruncate file \"%s\" to size %lu: %s",
+		elog(ERROR, "Cannot ftruncate file \"%s\" to size " UINT64_FORMAT ": %s",
 			to_fullpath, file->size, strerror(errno));
 
 	if (!fio_is_remote_file(out))
