@@ -205,12 +205,12 @@ get_header_errormsg(Page page, char **errormsg)
 
 	if (PageGetPageSize(page) != BLCKSZ)
 		snprintf(*errormsg, ERRMSG_MAX_LEN, "page header invalid, "
-				"page size %lu is not equal to block size %u",
+				"page size " UINT64_FORMAT " is not equal to block size %u",
 				PageGetPageSize(page), BLCKSZ);
 
 	else if (phdr->pd_lower < SizeOfPageHeaderData)
 		snprintf(*errormsg, ERRMSG_MAX_LEN, "page header invalid, "
-				"pd_lower %i is less than page header size %lu",
+				"pd_lower %i is less than page header size " UINT64_FORMAT,
 				phdr->pd_lower, SizeOfPageHeaderData);
 
 	else if (phdr->pd_lower > phdr->pd_upper)
@@ -230,7 +230,7 @@ get_header_errormsg(Page page, char **errormsg)
 
 	else if (phdr->pd_special != MAXALIGN(phdr->pd_special))
 		snprintf(*errormsg, ERRMSG_MAX_LEN, "page header invalid, "
-				"pd_special %i is misaligned, expected %lu",
+				"pd_special %i is misaligned, expected " UINT64_FORMAT,
 				phdr->pd_special, MAXALIGN(phdr->pd_special));
 
 	else if (phdr->pd_flags & ~PD_VALID_FLAG_BITS)
@@ -1206,7 +1206,7 @@ restore_data_file_internal(FILE *in, FILE *out, pgFile *file, uint32 backup_vers
 			datapagemap_add(map, blknum);
 	}
 
-	elog(LOG, "Copied file \"%s\": %lu bytes", from_fullpath, write_len);
+	elog(LOG, "Copied file \"%s\": " UINT64_FORMAT " bytes", from_fullpath, write_len);
 	return write_len;
 }
 
@@ -1250,7 +1250,7 @@ restore_non_data_file_internal(FILE *in, FILE *out, pgFile *file,
 
 	pg_free(buf);
 
-	elog(LOG, "Copied file \"%s\": %lu bytes", from_fullpath, file->write_size);
+	elog(LOG, "Copied file \"%s\": " UINT64_FORMAT " bytes", from_fullpath, file->write_size);
 }
 
 size_t
@@ -1327,7 +1327,7 @@ restore_non_data_file(parray *parent_chain, pgBackup *dest_backup,
 		elog(ERROR, "Failed to locate a full copy of non-data file \"%s\"", to_fullpath);
 
 	if (tmp_file->write_size <= 0)
-		elog(ERROR, "Full copy of non-data file has invalid size: %li. "
+		elog(ERROR, "Full copy of non-data file has invalid size: %" INT64_MODIFIER "i. "
 				"Metadata corruption in backup %s in file: \"%s\"",
 				tmp_file->write_size, backup_id_of(tmp_backup),
 				to_fullpath);
@@ -1985,10 +1985,10 @@ get_page_header(FILE *in, const char *fullpath, BackupPageHeader* bph,
 			return false;		/* EOF found */
 		else if (read_len != 0 && feof(in))
 			elog(ERROR,
-				 "Odd size page found at offset %ld of \"%s\"",
+				 "Odd size page found at offset " UINT64_FORMAT " of \"%s\"",
 				 ftello(in), fullpath);
 		else
-			elog(ERROR, "Cannot read header at offset %ld of \"%s\": %s",
+			elog(ERROR, "Cannot read header at offset " UINT64_FORMAT " of \"%s\": %s",
 				 ftello(in), fullpath, strerror(errno));
 	}
 
@@ -2289,7 +2289,7 @@ copy_pages(const char *to_fullpath, const char *from_fullpath,
 					 to_fullpath, strerror(errno));
 
 			if (ftruncate(fileno(out), file->size) == -1)
-				elog(ERROR, "Cannot ftruncate file \"%s\" to size %lu: %s",
+				elog(ERROR, "Cannot ftruncate file \"%s\" to size " UINT64_FORMAT ": %s",
 					 to_fullpath, file->size, strerror(errno));
 		}
 	}
@@ -2397,7 +2397,7 @@ get_data_file_headers(HeaderMap *hdr_map, pgFile *file, uint32 backup_version, b
 	if (hdr_crc != file->hdr_crc)
 	{
 		elog(strict ? ERROR : WARNING, "Header map for file \"%s\" crc mismatch \"%s\" "
-				"offset: %llu, len: %lu, current: %u, expected: %u",
+				"offset: " UINT64_FORMAT ", len: " UINT64_FORMAT ", current: %u, expected: %u",
 			file->rel_path, hdr_map->path, file->hdr_off, read_len, hdr_crc, file->hdr_crc);
 		goto cleanup;
 	}
